@@ -1,0 +1,80 @@
+<!doctype html>
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+</head>
+
+<head>
+    <style type="text/css">
+      html, body, #map-canvas { height: 100%; margin: 0; padding: 0;}
+    </style>
+    <script src="build/react.js"></script>
+    <script type="text/javascript"
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBCFuUCubZs6aNMcjg0n2h5S7aH3E47_ns">
+    </script>
+    <script type="text/javascript">
+      function getData(data)
+      {
+        var mapData = [];
+        var keys =  Object.keys(data);
+        for(i = 0; i < keys.length; i++)
+        {
+            mapData.push(data[keys[i]]);
+        }
+        return mapData;
+      }
+      function bindInfoW(marker, contentString, infowindow, map)
+      {
+        google.maps.event.addListener(marker, 'click', function() {
+            infowindow.setContent(contentString);
+            infowindow.open(map, marker);
+        });
+      }
+      function placeMarkers(data, map)
+      {
+        for(i = 0; i < data.length; i++)
+        {
+          var newLoc = new google.maps.LatLng(data[i].lat,data[i].long)
+          marker = new google.maps.Marker({
+          position: newLoc,
+          map: map,
+          title: data[i].name
+          });
+          var contentString = 
+          '<div class ="community">' + data[i].community + '</div>' +
+          '<div class ="description">' + data[i].description + '</div>'
+          var infowindow = new google.maps.InfoWindow;
+          bindInfoW(marker, contentString, infowindow, map);
+        }
+      }
+
+
+
+
+      function initialize() {
+        var myLatlng = new google.maps.LatLng(37.338200,-121.886300);
+        var mapOptions = {zoom: 8, center: myLatlng}
+        var map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+        var infowindow = new google.maps.InfoWindow();
+        
+        $.ajax({
+         url: "http://54.164.125.123/api/location/find",
+         type: "POST",
+         data: JSON.stringify({"lat": 37.338200, "long": -121.886300, "communities": ["technology"], "radius":20.000000}),
+         dataType: "json",
+         contentType: "application/json"
+          })
+          .done(function (data) {
+        var mapData = getData(data);
+        placeMarkers(mapData, map);
+        console.log(mapData[1]);
+        })
+      }
+      google.maps.event.addDomListener(window, 'load', initialize);
+    </script>
+  </head>
+  <body>
+  <div id="sidebar"></div>
+  <script type="text/jsx" src="build/sidebar.js"></script>
+<div id="map-canvas" style="width: 80%; height: 80%"></div>
+  </body>
+ 
